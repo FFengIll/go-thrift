@@ -1,3 +1,3 @@
-module github.com/samuel/go-thrift
+module github.com/FFengIll/go-thrift
 
 go 1.17
