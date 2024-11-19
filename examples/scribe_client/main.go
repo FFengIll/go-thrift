@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/samuel/go-thrift/examples/scribe"
-	"github.com/samuel/go-thrift/thrift"
+	"github.com/FFengIll/go-thrift/examples/scribe"
+	"github.com/FFengIll/go-thrift/thrift"
 )
 
 func main() {
