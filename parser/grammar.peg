@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 type namespace struct {
@@ -27,12 +28,13 @@ func toIfaceSlice(v interface{}) []interface{} {
     return v.([]interface{})
 }
 
-func ifaceSliceToString(v interface{}) string {
-	ifs := toIfaceSlice(v)
+func anySliceToString(v interface{}) string {
+    ifs, _ := v.([]uint8)
 	b := make([]byte, len(ifs))
 	for i, v := range ifs {
-		b[i] = v.([]uint8)[0]
+		b[i] = v
 	}
+    // fmt.Printf("%v\n", string(b))
 	return string(b)
 }
 
@@ -105,14 +107,21 @@ Include ← "include" _ file:Literal EOS {
 	return include(file.(string)), nil
 }
 
-Statement ← Include / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
+CppInclude ← "cpp_include" _ file:Literal EOS {
+	return include(file.(string)), nil
+}
 
-Namespace ← "namespace" _ scope:[*a-z.-]+ _ ns:Identifier EOS {
+Statement ← Include / CppInclude / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
+
+NamespaceScope ← "*" / "c_glib" / "cpp" / "delphi" / "haxe" / "go" / "java" / "js" / "lua" / "netstd" / "perl" / "php" / "py" / "py.twisted" / "rb" / "st" / "xsd"
+
+Namespace ← "namespace" _ scope:NamespaceScope _ ns:Identifier EOS {
 	return &namespace{
-		scope: ifaceSliceToString(scope),
+		scope: anySliceToString(scope),
 		namespace: string(ns.(Identifier)),
 	}, nil
 }
+
 
 Const ← "const" _ typ:FieldType _ name:Identifier __ "=" __ value:ConstValue EOS {
 	return &Constant{
@@ -282,7 +291,7 @@ BaseType ← name:BaseTypeName _ annotations:TypeAnnotations? {
 	}, nil
 }
 
-BaseTypeName ←  ("bool" / "byte" / "i16" / "i32" / "i64" / "double" / "string" / "binary" ) ![a-zA-Z0-9_] {
+BaseTypeName ←  ("bool" / "byte" / "i8" / "i16" / "i32" / "i64" / "double" / "string" / "binary" / "uuid") ![a-zA-Z0-9_] {
 	return string(c.text), nil
 }
 
@@ -315,7 +324,7 @@ ListType ← "list" WS "<" WS typ:FieldType WS ">" _ annotations:TypeAnnotations
 	}, nil
 }
 
-CppType ← "cpp_type" cppType:Literal {
+CppType ← "cpp_type" _ cppType:Literal {
 	return cppType, nil
 }
 
@@ -335,16 +344,16 @@ TypeAnnotation ← name:Identifier _ value:('=' __ value:Literal { return value,
 		optValue = value.(string)
 	}
 	return &Annotation{
-	  Name: string(name.(Identifier)),
+		Name: string(name.(Identifier)),
 		Value: optValue,
 	}, nil
 }
 
-IntConstant ← [-+]? Digit+ {
+IntConstant ← ('+' / '-')? Digit+ {
 	return strconv.ParseInt(string(c.text), 10, 64)
 }
 
-DoubleConstant ← [+-]? Digit* '.' Digit* ( ['Ee'] IntConstant )? {
+DoubleConstant ← ('+' / '-')? Digit* '.' Digit+ (['Ee'] IntConstant)? {
 	return strconv.ParseFloat(string(c.text), 64)
 }
 
@@ -380,11 +389,12 @@ Literal ← (('"' (`\"` / [^"])* '"') / ('\'' (`\'` / [^'])* '\'')) {
 	return strconv.Unquote(string(c.text))
 }
 
-Identifier ← (Letter / '_')+ (Letter / Digit / [._])* {
+Identifier ← (Letter / '_') (Letter / Digit / '.' / '_')* {
 	return Identifier(string(c.text)), nil
 }
 
-ListSeparator ← [,;]
+ListSeparator ← ',' / ';'
+
 Letter ← [A-Za-z]
 Digit ← [0-9]
 
