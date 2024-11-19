@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"fmt"
+	"errors"
+	"path/filepath"
 )
 
 type namespace struct {
@@ -111,7 +113,7 @@ CppInclude ← "cpp_include" _ file:Literal EOS {
 	return include(file.(string)), nil
 }
 
-Statement ← Include / CppInclude / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
+Statement ← Include / CppInclude / Namespace / Const / Enum / Typedef / Struct / Exception / Union / Service
 
 NamespaceScope ← "*" / "c_glib" / "cpp" / "delphi" / "haxe" / "go" / "java" / "js" / "lua" / "netstd" / "perl" / "php" / "py" / "py.twisted" / "rb" / "st" / "xsd"
 
@@ -167,7 +169,7 @@ EnumValue ← name:Identifier _ value:('=' _ IntConstant)? _ annotations:TypeAnn
 	return ev, nil
 }
 
-TypeDef ← "typedef" _ typ:FieldType _ name:Identifier _ annotations:TypeAnnotations? EOS {
+Typedef ← "typedef" _ typ:DefinitionType _ name:Identifier _ annotations:TypeAnnotations? EOS {
 	return &Typedef{
 		Type: typ.(*Type),
 		Alias: string(name.(Identifier)),
@@ -227,7 +229,7 @@ Service ← "service" _ name:Identifier _ extends:("extends" __ Identifier __)? 
 	}
 	if extends != nil {
 		svc.Extends = string(extends.([]interface{})[2].(Identifier))
-	}
+}
 	for _, m := range ms {
 		mt :=  m.([]interface{})[0].(*Method)
 		svc.Methods[mt.Name] = mt
@@ -275,122 +277,122 @@ Throws ← "throws" __ '(' __ exceptions:FieldList ')' {
 
 FieldType ← typ:(BaseType / ContainerType / Identifier) {
 	if t, ok := typ.(Identifier); ok {
-		return &Type{Name: string(t)}, nil
-	}
-	return typ, nil
+        return &Type{Name: string(t)}, nil
+    }
+    return typ, nil
 }
 
 DefinitionType ← typ:(BaseType / ContainerType) {
-	return typ, nil
+    return typ, nil
 }
 
 BaseType ← name:BaseTypeName _ annotations:TypeAnnotations? {
-	return &Type{
-		Name: name.(string),
-		Annotations: toAnnotations(annotations),
-	}, nil
+    return &Type{
+        Name: name.(string),
+        Annotations: toAnnotations(annotations),
+    }, nil
 }
 
 BaseTypeName ←  ("bool" / "byte" / "i8" / "i16" / "i32" / "i64" / "double" / "string" / "binary" / "uuid") ![a-zA-Z0-9_] {
-	return string(c.text), nil
+    return string(c.text), nil
 }
 
 ContainerType ← typ:(MapType / SetType / ListType) {
-	return typ, nil
+    return typ, nil
 }
 
 MapType ← CppType? "map" WS "<" WS key:FieldType WS "," WS value:FieldType WS ">" _ annotations:TypeAnnotations? {
-	return &Type{
-		Name: "map",
-		KeyType: key.(*Type),
-		ValueType: value.(*Type),
-		Annotations: toAnnotations(annotations),
-	}, nil
+    return &Type{
+        Name: "map",
+        KeyType: key.(*Type),
+        ValueType: value.(*Type),
+        Annotations: toAnnotations(annotations),
+    }, nil
 }
 
 SetType ← CppType? "set" WS "<" WS typ:FieldType WS ">" _ annotations:TypeAnnotations? {
-	return &Type{
-		Name: "set",
-		ValueType: typ.(*Type),
-		Annotations: toAnnotations(annotations),
-	}, nil
+    return &Type{
+        Name: "set",
+        ValueType: typ.(*Type),
+        Annotations: toAnnotations(annotations),
+    }, nil
 }
 
 ListType ← "list" WS "<" WS typ:FieldType WS ">" _ annotations:TypeAnnotations? {
-	return &Type{
-		Name: "list",
-		ValueType: typ.(*Type),
-		Annotations: toAnnotations(annotations),
-	}, nil
+    return &Type{
+        Name: "list",
+        ValueType: typ.(*Type),
+        Annotations: toAnnotations(annotations),
+    }, nil
 }
 
 CppType ← "cpp_type" _ cppType:Literal {
-	return cppType, nil
+    return cppType, nil
 }
 
 ConstValue ← Literal / DoubleConstant / IntConstant / ConstMap / ConstList / Identifier
 
 TypeAnnotations ← '(' __ annotations:TypeAnnotation* ')' {
-	var anns []*Annotation
-	for _, ann := range annotations.([]interface{}) {
-		anns = append(anns, ann.(*Annotation))
-	}
-	return anns, nil
+    var anns []*Annotation
+    for _, ann := range annotations.([]interface{}) {
+        anns = append(anns, ann.(*Annotation))
+    }
+    return anns, nil
 }
 
 TypeAnnotation ← name:Identifier _ value:('=' __ value:Literal { return value, nil })? ListSeparator? __ {
-	var optValue string
-	if value != nil {
-		optValue = value.(string)
-	}
-	return &Annotation{
-		Name: string(name.(Identifier)),
-		Value: optValue,
-	}, nil
+    var optValue string
+    if value != nil {
+        optValue = value.(string)
+    }
+    return &Annotation{
+        Name: string(name.(Identifier)),
+        Value: optValue,
+    }, nil
 }
 
 IntConstant ← ('+' / '-')? Digit+ {
-	return strconv.ParseInt(string(c.text), 10, 64)
+    return strconv.ParseInt(string(c.text), 10, 64)
 }
 
 DoubleConstant ← ('+' / '-')? Digit* '.' Digit+ (['Ee'] IntConstant)? {
-	return strconv.ParseFloat(string(c.text), 64)
+    return strconv.ParseFloat(string(c.text), 64)
 }
 
 ConstList ← '[' __ values:(ConstValue __ ListSeparator? __)* __ ']' {
-	valueSlice := values.([]interface{})
-	vs := make([]interface{}, len(valueSlice))
-	for i, v := range valueSlice {
-		vs[i] = v.([]interface{})[0]
-	}
-	return vs, nil
+    valueSlice := values.([]interface{})
+    vs := make([]interface{}, len(valueSlice))
+    for i, v := range valueSlice {
+        vs[i] = v.([]interface{})[0]
+    }
+    return vs, nil
 }
 
 ConstMap ← '{' __ values:(ConstValue __ ':' __ ConstValue __ (',' / &'}') __)* '}' {
-	if values == nil {
-		return nil, nil
-	}
-	vals := values.([]interface{})
-	kvs := make([]KeyValue, len(vals))
-	for i, kv := range vals {
-		v := kv.([]interface{})
-		kvs[i] = KeyValue{
-			Key: v[0],
-			Value: v[4],
-		}
-	}
-	return kvs, nil
+    if values == nil {
+        return nil, nil
+    }
+    vals := values.([]interface{})
+    kvs := make([]KeyValue, len(vals))
+    for i, kv := range vals {
+        v := kv.([]interface{})
+        kvs[i] = KeyValue{
+            Key: v[0],
+            Value: v[4],
+        }
+    }
+    return kvs, nil
 }
 
 Literal ← (('"' (`\"` / [^"])* '"') / ('\'' (`\'` / [^'])* '\'')) {
-	if len(c.text) != 0 && c.text[0] == '\'' {
-		return strconv.Unquote(`"` + strings.Replace(string(c.text[1:len(c.text)-1]), `\'`, `'`, -1) + `"`)
-	}
-	return strconv.Unquote(string(c.text))
+    if len(c.text) != 0 && c.text[0] == '\'' {
+        return strconv.Unquote(`"` + strings.Replace(string(c.text[1:len(c.text)-1]), `\'`, `'`, -1) + `"`)
+    }
+    return strconv.Unquote(string(c.text))
 }
 
 Identifier ← (Letter / '_') (Letter / Digit / '.' / '_')* {
-	return Identifier(string(c.text)), nil
+    return Identifier(string(c.text)), nil
 }
 
 ListSeparator ← ',' / ';'
