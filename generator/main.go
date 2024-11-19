@@ -13,8 +13,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/samuel/go-thrift/parser"
-	"github.com/samuel/go-thrift/thrift"
+	"github.com/FFengIll/go-thrift/parser"
+	"github.com/FFengIll/go-thrift/thrift"
 )
 
 func camelCase(st string) string {
