@@ -31,10 +31,12 @@ func toIfaceSlice(v interface{}) []interface{} {
 }
 
 func anySliceToString(v interface{}) string {
-    ifs, _ := v.([]uint8)
+    // fmt.Printf("%v\n", v)
+
+	ifs, _ := v.([]interface{})
 	b := make([]byte, len(ifs))
 	for i, v := range ifs {
-		b[i] = v
+		b[i] = v.([]uint8)[0]
 	}
     // fmt.Printf("%v\n", string(b))
 	return string(b)
