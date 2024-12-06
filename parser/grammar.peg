@@ -299,7 +299,7 @@ ContainerType ← typ:(MapType / SetType / ListType) {
 	return typ, nil
 }
 
-MapType ← CppType? "map" WS "<" WS key:FieldType WS "," WS value:FieldType WS ">" _ annotations:TypeAnnotations? {
+MapType ← "map" CppType? WS "<" WS key:FieldType WS "," WS value:FieldType WS ">" _ annotations:TypeAnnotations? {
 	return &Type{
 		Name: "map",
 		KeyType: key.(*Type),
@@ -308,7 +308,7 @@ MapType ← CppType? "map" WS "<" WS key:FieldType WS "," WS value:FieldType WS 
 	}, nil
 }
 
-SetType ← CppType? "set" WS "<" WS typ:FieldType WS ">" _ annotations:TypeAnnotations? {
+SetType ← "set" CppType? WS "<" WS typ:FieldType WS ">" _ annotations:TypeAnnotations? {
 	return &Type{
 		Name: "set",
 		ValueType: typ.(*Type),

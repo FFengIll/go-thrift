@@ -1493,18 +1493,18 @@ var g = &grammar{
 				expr: &seqExpr{
 					pos: position{line: 302, col: 11, offset: 7507},
 					exprs: []any{
-						&zeroOrOneExpr{
-							pos: position{line: 302, col: 11, offset: 7507},
-							expr: &ruleRefExpr{
-								pos:  position{line: 302, col: 11, offset: 7507},
-								name: "CppType",
-							},
-						},
 						&litMatcher{
-							pos:        position{line: 302, col: 20, offset: 7516},
+							pos:        position{line: 302, col: 11, offset: 7507},
 							val:        "map",
 							ignoreCase: false,
 							want:       "\"map\"",
+						},
+						&zeroOrOneExpr{
+							pos: position{line: 302, col: 17, offset: 7513},
+							expr: &ruleRefExpr{
+								pos:  position{line: 302, col: 17, offset: 7513},
+								name: "CppType",
+							},
 						},
 						&ruleRefExpr{
 							pos:  position{line: 302, col: 26, offset: 7522},
@@ -1588,18 +1588,18 @@ var g = &grammar{
 				expr: &seqExpr{
 					pos: position{line: 311, col: 11, offset: 7760},
 					exprs: []any{
-						&zeroOrOneExpr{
-							pos: position{line: 311, col: 11, offset: 7760},
-							expr: &ruleRefExpr{
-								pos:  position{line: 311, col: 11, offset: 7760},
-								name: "CppType",
-							},
-						},
 						&litMatcher{
-							pos:        position{line: 311, col: 20, offset: 7769},
+							pos:        position{line: 311, col: 11, offset: 7760},
 							val:        "set",
 							ignoreCase: false,
 							want:       "\"set\"",
+						},
+						&zeroOrOneExpr{
+							pos: position{line: 311, col: 17, offset: 7766},
+							expr: &ruleRefExpr{
+								pos:  position{line: 311, col: 17, offset: 7766},
+								name: "CppType",
+							},
 						},
 						&ruleRefExpr{
 							pos:  position{line: 311, col: 26, offset: 7775},
