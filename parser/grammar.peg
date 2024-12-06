@@ -123,11 +123,12 @@ Namespace ← "namespace" _ scope:NamespaceScope _ ns:Identifier EOS {
 	}, nil
 }
 
-Const ← "const" _ typ:FieldType _ name:Identifier __ "=" __ value:ConstValue EOS {
+Const ← "const" _ typ:FieldType _ name:Identifier __ "=" __ value:ConstValue _ annotations:TypeAnnotations? EOS {
 	return &Constant{
 		Name: string(name.(Identifier)),
 		Type: typ.(*Type),
 		Value: value,
+        Annotations: toAnnotations(annotations),
 	}, nil
 }
 

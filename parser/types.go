@@ -33,9 +33,10 @@ type Enum struct {
 }
 
 type Constant struct {
-	Name  string
-	Type  *Type
-	Value interface{}
+	Name        string
+	Type        *Type
+	Value       interface{}
+	Annotations []*Annotation
 }
 
 type Field struct {
