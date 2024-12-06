@@ -28,12 +28,13 @@ func toIfaceSlice(v interface{}) []interface{} {
     return v.([]interface{})
 }
 
-func ifaceSliceToString(v interface{}) string {
-	ifs := toIfaceSlice(v)
+func anySliceToString(v interface{}) string {
+    ifs, _ := v.([]uint8)
 	b := make([]byte, len(ifs))
 	for i, v := range ifs {
-		b[i] = v.([]uint8)[0]
+		b[i] = v
 	}
+    // fmt.Printf("%v\n", string(b))
 	return string(b)
 }
 
@@ -112,9 +113,12 @@ CppInclude ← "cpp_include" _ file:Literal EOS {
 
 Statement ← Include / CppInclude / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
 
-Namespace ← "namespace" _ scope:[*a-z.-]+ _ ns:Identifier EOS {
+// NamespaceScope ← "c_glib" / "cpp" / "delphi" / "haxe" / "go" / "java" / "js" / "lua" / "netstd" / "perl" / "php" / "py" / "py.twisted" / "rb" / "st" / "xsd"
+NamespaceScope ← [*a-z.-]+
+
+Namespace ← "namespace" _ scope:NamespaceScope _ ns:Identifier EOS {
 	return &namespace{
-		scope: ifaceSliceToString(scope),
+		scope: anySliceToString(scope),
 		namespace: string(ns.(Identifier)),
 	}, nil
 }
