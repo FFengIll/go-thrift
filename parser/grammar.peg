@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 type namespace struct {
@@ -105,7 +106,11 @@ Include ← "include" _ file:Literal EOS {
 	return include(file.(string)), nil
 }
 
-Statement ← Include / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
+CppInclude ← "cpp_include" _ file:Literal EOS {
+	return include(file.(string)), nil
+}
+
+Statement ← Include / CppInclude / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
 
 Namespace ← "namespace" _ scope:[*a-z.-]+ _ ns:Identifier EOS {
 	return &namespace{
@@ -282,7 +287,7 @@ BaseType ← name:BaseTypeName _ annotations:TypeAnnotations? {
 	}, nil
 }
 
-BaseTypeName ←  ("bool" / "byte" / "i16" / "i32" / "i64" / "double" / "string" / "binary" ) ![a-zA-Z0-9_] {
+BaseTypeName ←  ("bool" / "byte" / "i8" / "i16" / "i32" / "i64" / "double" / "string" / "binary" / "uuid") ![a-zA-Z0-9_] {
 	return string(c.text), nil
 }
 
@@ -335,16 +340,16 @@ TypeAnnotation ← name:Identifier _ value:('=' __ value:Literal { return value,
 		optValue = value.(string)
 	}
 	return &Annotation{
-	  Name: string(name.(Identifier)),
+		Name: string(name.(Identifier)),
 		Value: optValue,
 	}, nil
 }
 
-IntConstant ← [-+]? Digit+ {
+IntConstant ← ('+' / '-')? Digit+ {
 	return strconv.ParseInt(string(c.text), 10, 64)
 }
 
-DoubleConstant ← [+-]? Digit* '.' Digit* ( ['Ee'] IntConstant )? {
+DoubleConstant ← ('+' / '-')? Digit* '.' Digit+ (['Ee'] IntConstant)? {
 	return strconv.ParseFloat(string(c.text), 64)
 }
 
@@ -380,11 +385,11 @@ Literal ← (('"' (`\"` / [^"])* '"') / ('\'' (`\'` / [^'])* '\'')) {
 	return strconv.Unquote(string(c.text))
 }
 
-Identifier ← (Letter / '_')+ (Letter / Digit / [._])* {
+Identifier ← (Letter / '_') (Letter / Digit / '.' / '_')* {
 	return Identifier(string(c.text)), nil
 }
 
-ListSeparator ← [,;]
+ListSeparator ← ',' / ';'
 Letter ← [A-Za-z]
 Digit ← [0-9]
 
