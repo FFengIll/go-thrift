@@ -111,7 +111,7 @@ CppInclude ← "cpp_include" _ file:Literal EOS {
 	return include(file.(string)), nil
 }
 
-Statement ← Include / CppInclude / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
+Statement ← Include / CppInclude / Namespace / Const / Enum / Typedef / Struct / Exception / Union / Service
 
 // NamespaceScope ← "c_glib" / "cpp" / "delphi" / "haxe" / "go" / "java" / "js" / "lua" / "netstd" / "perl" / "php" / "py" / "py.twisted" / "rb" / "st" / "xsd"
 NamespaceScope ← [*a-z.-]+
@@ -167,7 +167,7 @@ EnumValue ← name:Identifier _ value:('=' _ IntConstant)? _ annotations:TypeAnn
 	return ev, nil
 }
 
-TypeDef ← "typedef" _ typ:FieldType _ name:Identifier _ annotations:TypeAnnotations? EOS {
+Typedef ← "typedef" _ typ:DefinitionType _ name:Identifier _ annotations:TypeAnnotations? EOS {
 	return &Typedef{
 		Type: typ.(*Type),
 		Alias: string(name.(Identifier)),
@@ -324,7 +324,7 @@ ListType ← "list" WS "<" WS typ:FieldType WS ">" _ annotations:TypeAnnotations
 	}, nil
 }
 
-CppType ← "cpp_type" cppType:Literal {
+CppType ← "cpp_type" _ cppType:Literal {
 	return cppType, nil
 }
 
