@@ -114,7 +114,7 @@ CppInclude ← "cpp_include" _ file:Literal EOS {
 Statement ← Include / CppInclude / Namespace / Const / Enum / Typedef / Struct / Exception / Union / Service
 
 // NamespaceScope ← "c_glib" / "cpp" / "delphi" / "haxe" / "go" / "java" / "js" / "lua" / "netstd" / "perl" / "php" / "py" / "py.twisted" / "rb" / "st" / "xsd"
-NamespaceScope ← [*a-z.-]+
+NamespaceScope ← [_*a-z.-]+
 
 Namespace ← "namespace" _ scope:NamespaceScope _ ns:Identifier EOS {
 	return &namespace{
