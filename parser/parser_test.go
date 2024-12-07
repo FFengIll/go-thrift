@@ -20,6 +20,7 @@ func TestServiceParsing(t *testing.T) {
 		namespace go somepkg
 		namespace python some.module123
 		namespace python.py-twisted another
+		namespace c_glib lib
 
 		const map<string,string> M1 = {"hello": "world", "goodnight": "moon"}
 		const string S1 = "foo\"\tbar"
