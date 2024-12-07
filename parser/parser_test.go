@@ -529,6 +529,22 @@ func TestParseFiles(t *testing.T) {
 	}
 }
 
+func TestParseConstMap(t *testing.T) {
+	data := `
+const map<ErrorCode, string> Errors = {
+    ErrorCode.Success: "",
+    ErrorCode.ParamsError: "Request params error",
+    ErrorCode.Created: "has created",
+	} (scope = "common")
+	 `
+
+	res, err := parse(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	println(res)
+}
+
 func pprint(v interface{}) string {
 	b, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
