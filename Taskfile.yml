@@ -19,7 +19,7 @@ tasks:
 
   install:
     cmds:
-      - go install github.com/mna/pigeon 
+      - go install github.com/mna/pigeon@latest
 
   gen:
     cmds:
