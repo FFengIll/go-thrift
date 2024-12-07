@@ -1,5 +1,11 @@
 # CHANGELOG of FORK
 
+## v0.2.0
+- gen/peg: more syntax support to obey `https://thrift.apache.org/docs/idl`.
+- peg: support constant annotation.
+- bugfix/peg: some minor syntax define bug.
+- test: more test case for new syntax support.
+
 ## v0.1.1
 - build: upgrade go to 1.18 (to support keyword `any`).
 
